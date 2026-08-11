@@ -54,7 +54,7 @@ SOCKET_TIMEOUT_S = 15.0      # socket 超时 (秒), 慢客户端/半开连接不
 # 生产库路径兜底常量 — 权威值在 config/governance.yaml production_db.paths
 # 2026-08-11 开源化: 兜底由 governance_config 按 HERMES_HOME 布局推导,
 # 不再硬编码内部绝对路径 (来源: docs/PRODUCTION-DB-DISCOVERY.md §1)
-PROFILE_DB_PATHS_FALLBACK: Dict[str, str] = dict(cfg.default_profile_db_paths())
+# 注: 定义在 import governance_config 之后 (需 cfg, 见下方加载区)
 # 固定输出顺序 (monitor_url hash 抑制要求逐字节稳定)
 PROFILE_ORDER: List[str] = ["default", "athena", "xuanwu", "duanmu"]
 
@@ -72,6 +72,9 @@ sys.path.insert(0, os.path.join(PROJECT_ROOT, "scripts"))
 
 import governance_config as cfg          # noqa: E402  阈值单一事实源 (FIX-B3)
 import governance_detector as detector   # noqa: E402  L0/L1 dry-run 只读检测
+
+# 生产库路径兜底常量 (需 cfg, 故定义在 import 之后) — 权威值在 governance.yaml
+PROFILE_DB_PATHS_FALLBACK: Dict[str, str] = dict(cfg.default_profile_db_paths())
 
 # 服务启动时间戳 (固定) — 保证数据未变化时输出逐字节相同
 BOOT_TS = datetime.now().astimezone().isoformat(timespec="seconds")
