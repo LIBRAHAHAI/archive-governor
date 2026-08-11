@@ -116,6 +116,7 @@ scripts/
 └── session_governor.py         # 治理主入口 CLI
 ```
 
+**📖 完整使用指南见 [docs/USAGE.md](docs/USAGE.md)**（安装/配置/使用/故障排查/FAQ）。
 详细设计见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)，运行手册见 [docs/OPERATIONS.md](docs/OPERATIONS.md)。
 
 ## 安全边界
