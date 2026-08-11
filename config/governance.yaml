@@ -1,0 +1,69 @@
+# archive-governor 配置
+# =====================================================================
+# 开源模板 (2026-08-11): 所有路径均为示例, 请按你的环境修改。
+# 生产库路径建议用 HERMES_HOME 环境变量推导 (见 scripts/governance_config.py
+# default_profile_db_paths), 本文件 production_db.paths 是权威覆盖源。
+# =====================================================================
+
+governance:
+  # 每 profile 阈值(MB)
+  storage_threshold_mb: 60
+  # 硬顶(MB)— 超过只告警不丢数据(AC-D2.2)
+  storage_ceiling_mb: 80
+
+  # profile 覆盖(每 profile 独立,不会互相抵扣 v3 §10.3)
+  profile_overrides:
+    default: 80            # default 特例 (示例值, 按需调整)
+    # hermes: 60           # 缺省即用 storage_threshold_mb
+    # athena: 60
+    # xuanwu: 60
+    # duanmu: 60
+
+  # 滞后带: 归档后体积 ≤ 阈值 × (1 - target_ratio)
+  # v3 = 0.1(10% 滞后带,目标阈值 × 0.9)
+  # v3.1 = 0.15(15% 滞后带,目标阈值 × 0.85)
+  target_ratio: 0.15
+
+  # 触发模式(v3.1)
+  trigger:
+    mode: startup          # 启动自检
+    enabled: true
+    # 候选方案:
+    # - threshold_watch: 后台 watchdog 监听文件大小
+    # - cron: 定时(已否决,非实时)
+
+  # 归档包存放根目录 (各 profile 子目录自动创建)
+  # 示例: /data/archive-governor/archives 或 C:/archive-governor-data/archives
+  archive_root: "/path/to/archive-governor-data/archives"
+
+# 生产库路径 (示例 — 替换为你的 Hermes 环境)
+# 推荐: 留空让代码按 HERMES_HOME 自动推导 (governance_config.default_profile_db_paths);
+#       或在此显式覆盖 (优先级最高)
+production_db:
+  path: ""                 # default profile 兜底, 留空 = 自动推导
+  profiles: [default, hermes, athena, xuanwu, duanmu]
+  paths: {}                # 留空 = 自动推导; 示例: {default: "C:/hermes/state.db"}
+
+# 治理状态监控端点 (可选组件, 已退役于 2026-08-11, 保留配置兼容)
+monitor:
+  port: 8768
+  route: "/governance_snapshot.json"
+
+# 安全(AC-D5)
+security:
+  # 输入白名单(session_id / profile_name)
+  id_pattern: "^[A-Za-z0-9_-]+$"
+  # 审计日志不含消息原文(AC-D5.4)
+  log_no_message_content: true
+  # SQL 全参数化(AC-D5.1)
+  parameterized_only: true
+  # 归档前自动备份
+  pre_archive_backup: true
+  # 备份保留次数
+  backup_retention: 5
+
+# 通知(可选, v3.1 暂未实现)
+notify:
+  on_archive_complete: false
+  on_ceiling_breach: true
+  on_restore_failure: true
